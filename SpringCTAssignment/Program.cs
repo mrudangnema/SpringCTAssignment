@@ -23,13 +23,13 @@ builder.Services.AddDbContext<DbaseContext>(options =>
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromSeconds(10);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    //options.Cookie.Name = "AuthKey"
-});
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromSeconds(10);
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//    //options.Cookie.Name = "AuthKey"
+//});
 
 var app = builder.Build();
 
@@ -46,6 +46,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseSession();
+//app.UseSession();
 
 app.Run();

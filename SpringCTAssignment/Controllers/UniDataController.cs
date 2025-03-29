@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Repository.Entities;
 using Repository.Repo;
 using Repository.ViewModels;
 using SpringCTAssignment.Infrastructure;
+using System.Security.Cryptography;
 
 namespace SpringCTAssignment.Controllers
 {
@@ -14,9 +16,11 @@ namespace SpringCTAssignment.Controllers
     public class UniDataController : ControllerBase
     {
         internal IRepo _repo;
-        public UniDataController(IRepo repo)
+        internal IMemoryCache _cache;
+        public UniDataController(IRepo repo, IMemoryCache cache)
         {
             _repo = repo;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -31,8 +35,8 @@ namespace SpringCTAssignment.Controllers
                 if(username.Equals("SpringCtUser") && pass.Equals("ThisIsARandomPass"))
                 {
                     var key = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString(Utility.SessionKeyName, key);
-                    HttpContext.Session.SetString("Expiry", DateTime.Now.AddSeconds(Utility.SessionKeyAge).ToString());
+                    _cache.Set(Utility.SessionKeyName, key);
+                    _cache.Set("Expiry", DateTime.Now.AddSeconds(Utility.SessionKeyAge).ToString());
                     return key;
                 }
             }
@@ -55,13 +59,13 @@ namespace SpringCTAssignment.Controllers
                 }
 
                 var keyExpiry = DateTime.Now.AddDays(1);
-                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                var keyexpiryStr = _cache.Get("Expiry")?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(keyexpiryStr))
                 {
                     keyExpiry = Convert.ToDateTime(keyexpiryStr);
                 }
 
-                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+                var activeKey = _cache.Get(Utility.SessionKeyName)?.ToString() ?? string.Empty;
 
                 if(keyExpiry >=  DateTime.Now && activeKey != data.key)
                 {
@@ -117,13 +121,13 @@ namespace SpringCTAssignment.Controllers
                 }
 
                 var keyExpiry = DateTime.Now.AddDays(1);
-                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                var keyexpiryStr = _cache.Get("Expiry")?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(keyexpiryStr))
                 {
                     keyExpiry = Convert.ToDateTime(keyexpiryStr);
                 }
 
-                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+                var activeKey = _cache.Get(Utility.SessionKeyName)?.ToString() ?? string.Empty;
 
                 if (keyExpiry >= DateTime.Now && activeKey != key)
                 {
@@ -175,13 +179,13 @@ namespace SpringCTAssignment.Controllers
                 }
 
                 var keyExpiry = DateTime.Now.AddDays(1);
-                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                var keyexpiryStr = _cache.Get("Expiry")?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(keyexpiryStr))
                 {
                     keyExpiry = Convert.ToDateTime(keyexpiryStr);
                 }
 
-                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+                var activeKey = _cache.Get(Utility.SessionKeyName)?.ToString() ?? string.Empty;
 
                 if (keyExpiry >= DateTime.Now && activeKey != data.key)
                 {
@@ -220,13 +224,13 @@ namespace SpringCTAssignment.Controllers
                 }
 
                 var keyExpiry = DateTime.Now.AddDays(1);
-                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                var keyexpiryStr = _cache.Get("Expiry")?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(keyexpiryStr))
                 {
                     keyExpiry = Convert.ToDateTime(keyexpiryStr);
                 }
 
-                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+                var activeKey = _cache.Get(Utility.SessionKeyName)?.ToString() ?? string.Empty;
 
                 if (keyExpiry >= DateTime.Now && activeKey != key)
                 {
@@ -260,13 +264,13 @@ namespace SpringCTAssignment.Controllers
                 }
 
                 var keyExpiry = DateTime.Now.AddDays(1);
-                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                var keyexpiryStr = _cache.Get("Expiry")?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(keyexpiryStr))
                 {
                     keyExpiry = Convert.ToDateTime(keyexpiryStr);
                 }
 
-                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+                var activeKey = _cache.Get(Utility.SessionKeyName)?.ToString() ?? string.Empty;
 
                 if (keyExpiry >= DateTime.Now && activeKey != data.key)
                 {
