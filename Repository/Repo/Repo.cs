@@ -258,15 +258,16 @@ namespace Repository.Repo
             try
             {
                 var query = from a in _ctx.Students
-                            join b in _ctx.StudentCourseRels on a.ID equals b.StudentID
-                            join c in _ctx.Courses on b.CourseID equals c.ID
+                            join b in _ctx.StudentCourseRels on a.ID equals b.StudentID into jList
+                            from jl1 in jList.DefaultIfEmpty()
+                            join c in _ctx.Courses on jl1.CourseID equals c.ID
                             select new StudentCourseRel
                             {
                                 ID = a.ID,
                                 StudentID = a.ID,
                                 Student = a,
-                                CourseID = c.ID,
-                                Course = c
+                                CourseID = c != null ? c.ID : 0,
+                                Course = c != null ? c : new Course()
                             };
                 var result = await query.ToListAsync();
             }
