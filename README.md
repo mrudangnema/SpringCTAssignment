@@ -11,6 +11,11 @@
     f.	Insert into Courses values (‘Psychology, ‘2025-29-03 15:30:00.00000’, 0)
 3.	You can use the GetCourses Api end point to fetch all course data to link with students
 4.	Database schema are available in Migration file
-5.	Authentication part is still left
-    a. I tried to implement basic auth
-    a. I had used Session but it did not work (it should not either). Need to update
+    a.Please run the migration in your db to add tables	
+6.	A very basic authentication is implemented with cache with hardcoded credentials:
+    a.UserName: SpringCtUser
+  	b.Pass: ThisIsARandomPass
+7. I have excluded database communication into a separate Repository layer (also displaying Dependency implementation)
+8. GetStudents end point returns all registered students along with the courses they have opted
+    a. It returns courses in comma separated values along with another property sending course in json structure
+9. Inputs are also taken using UserInput class to included key along with required params
