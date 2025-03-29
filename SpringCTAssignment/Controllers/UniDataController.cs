@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Repository.Entities;
 using Repository.Repo;
 using Repository.ViewModels;
+using SpringCTAssignment.Infrastructure;
 
 namespace SpringCTAssignment.Controllers
 {
@@ -15,11 +19,56 @@ namespace SpringCTAssignment.Controllers
             _repo = repo;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<List<Student>>> CreateStudents(List<Student> students)
+        [HttpGet]
+        public ActionResult<string> Login(string username, string pass)
         {
             try
             {
+                if(string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(pass))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+                if(username.Equals("SpringCtUser") && pass.Equals("ThisIsARandomPass"))
+                {
+                    var key = Guid.NewGuid().ToString();
+                    HttpContext.Session.SetString(Utility.SessionKeyName, key);
+                    HttpContext.Session.SetString("Expiry", DateTime.Now.AddSeconds(Utility.SessionKeyAge).ToString());
+                    return key;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return Unauthorized("You are not authorized");
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<List<Student>>> CreateStudents(UserInput<List<Student>> data)
+        {
+            try
+            {
+                if (data == null || string.IsNullOrWhiteSpace(data.key))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+
+                var keyExpiry = DateTime.Now.AddDays(1);
+                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                if (!string.IsNullOrWhiteSpace(keyexpiryStr))
+                {
+                    keyExpiry = Convert.ToDateTime(keyexpiryStr);
+                }
+
+                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+
+                if(keyExpiry >=  DateTime.Now && activeKey != data.key)
+                {
+                    return Unauthorized("You are not authorized or your session has expired, please try again!");
+                }
+
+                var students = data.Data;
                 if (students is not null && students.Count > 0)
                 {
                     if (!ModelState.IsValid)
@@ -58,10 +107,29 @@ namespace SpringCTAssignment.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Student>>> GetStudents()
+        public async Task<ActionResult<List<Student>>> GetStudents(string key)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+
+                var keyExpiry = DateTime.Now.AddDays(1);
+                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                if (!string.IsNullOrWhiteSpace(keyexpiryStr))
+                {
+                    keyExpiry = Convert.ToDateTime(keyexpiryStr);
+                }
+
+                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+
+                if (keyExpiry >= DateTime.Now && activeKey != key)
+                {
+                    return Unauthorized("You are not authorized or your session has expired, please try again!");
+                }
+
                 //var students = await Task.Run(() => _repo.GetStudents().ToList());
                 var studentsWithCourses = await _repo.GetStudentsWithCourses();
                 if (studentsWithCourses is null || studentsWithCourses.Count == 0)
@@ -96,11 +164,31 @@ namespace SpringCTAssignment.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Student>>> GetStudent(string studentID)
+        [HttpPost]
+        public async Task<ActionResult<List<Student>>> GetStudent(UserInput<string> data)
         {
             try
             {
+                if (data == null || string.IsNullOrWhiteSpace(data.key))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+
+                var keyExpiry = DateTime.Now.AddDays(1);
+                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                if (!string.IsNullOrWhiteSpace(keyexpiryStr))
+                {
+                    keyExpiry = Convert.ToDateTime(keyexpiryStr);
+                }
+
+                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+
+                if (keyExpiry >= DateTime.Now && activeKey != data.key)
+                {
+                    return Unauthorized("You are not authorized or your session has expired, please try again!");
+                }
+
+                var studentID = data.Data;
                 if (string.IsNullOrWhiteSpace(studentID))
                 {
                     return BadRequest("Invalid student data");
@@ -122,10 +210,29 @@ namespace SpringCTAssignment.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Course>>> GetCourses()
+        public async Task<ActionResult<List<Course>>> GetCourses(string key)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+
+                var keyExpiry = DateTime.Now.AddDays(1);
+                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                if (!string.IsNullOrWhiteSpace(keyexpiryStr))
+                {
+                    keyExpiry = Convert.ToDateTime(keyexpiryStr);
+                }
+
+                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+
+                if (keyExpiry >= DateTime.Now && activeKey != key)
+                {
+                    return Unauthorized("You are not authorized or your session has expired, please try again!");
+                }
+
                 var courses = await Task.Run(() => _repo.GetCourses().ToList());
                 if (courses is not null)
                 {
@@ -143,10 +250,31 @@ namespace SpringCTAssignment.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> SetupStudentCourseRel(List<StudentCourseRel> rels)
+        public async Task<ActionResult> SetupStudentCourseRel(UserInput<List<StudentCourseRel>> data)
         {
             try
             {
+                if (data == null || string.IsNullOrWhiteSpace(data.key))
+                {
+                    return Unauthorized("You are not authorized");
+                }
+
+                var keyExpiry = DateTime.Now.AddDays(1);
+                var keyexpiryStr = HttpContext.Session.GetString("Expiry");
+                if (!string.IsNullOrWhiteSpace(keyexpiryStr))
+                {
+                    keyExpiry = Convert.ToDateTime(keyexpiryStr);
+                }
+
+                var activeKey = HttpContext.Session.GetString(Utility.SessionKeyName) ?? string.Empty;
+
+                if (keyExpiry >= DateTime.Now && activeKey != data.key)
+                {
+                    return Unauthorized("You are not authorized or your session has expired, please try again!");
+                }
+
+                var rels = data.Data;
+
                 if (rels is null || rels.Count == 0)
                 {
                     return BadRequest("Invalid student course data");
